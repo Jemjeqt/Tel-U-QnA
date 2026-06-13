@@ -15,7 +15,7 @@ const postSchema = new mongoose.Schema({
   isSolved: { type: Boolean, default: false },
   acceptedCommentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment', default: null },
   isDeleted: { type: Boolean, default: false },
-}, { timestamps: true });
+}, { timestamps: true, versionKey: false });
 
 // Indexes sesuai spesifikasi
 postSchema.index({ authorId: 1 });

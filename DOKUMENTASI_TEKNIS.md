@@ -1,53 +1,46 @@
 # Dokumentasi Teknis: Tel-U QnA
 
-Dokumentasi ini berisi penjelasan mengenai fitur-fitur teknis yang diimplementasikan di dalam *backend* dan *frontend* proyek Tel-U QnA. Dirancang untuk membantu anggota kelompok memahami bagaimana kode bekerja agar siap menghadapi sesi presentasi atau tanya jawab dosen.
-
 ---
 
 ## 1. Sistem Otentikasi Berbasis JWT (JSON Web Token)
 
-Aplikasi ini menggunakan JWT sebagai mekanisme login. Setelah mahasiswa berhasil login, server memberikan sebuah "KTP Digital" (token) yang harus dibawa setiap kali mengakses fitur terproteksi. Server tidak perlu mengingat siapa yang sedang login karena semua informasi sudah ada di dalam token tersebut.
+Aplikasi ini pakai JWT buat login. Konsepnya kayak **"KTP Digital"**. Setelah aku berhasil login, server bakal ngasih token KTP ini. Tiap kali mau ngakses fitur penting (kayak bikin post), KTP ini wajib dibawa. Enaknya, server ga perlu capek nginget siapa yang lagi login, karena semua identitasku udah nempel di dalam token itu.
 
-### A. Pembuatan Token (Saat Login & Register)
+### A. Pas Bikin Token (Login & Register)
 📍 **File:** `server/routes/auth.js`
 
-Saat mahasiswa berhasil login atau mendaftar, server membuat token JWT berisi identitas pengguna, lalu mengirimkannya ke browser.
-
+Saat login sukses, server langsung ngebungkus dataku jadi token dan ngirim ke browser.
 ```javascript
-// Men-generate Token JWT, berlaku selama 7 hari
+// Bikin Token JWT, umurnya 7 hari
 const token = jwt.sign(
-  { id: user._id, username: user.username },  // Data identitas yang dibungkus
-  process.env.JWT_SECRET,                      // Kunci rahasia dari file .env
-  { expiresIn: '7d' }                         // Masa berlaku token
+  { id: user._id, username: user.username },  // Data yang diselipin ke KTP
+  process.env.JWT_SECRET,                      // Kunci gembok rahasia
+  { expiresIn: '7d' }                         // Masa berlaku
 );
 
-// Token dikirim ke browser bersama data user
+// Kirim ke browser
 res.json({ 
   token, 
   user: { id: user._id, username: user.username, email: user.email } 
 });
 ```
 
-### B. Verifikasi Token (Middleware Keamanan)
+### B. Pas Pengecekan Token (Middleware Keamanan)
 📍 **File:** `server/middleware/auth.js`
 
-Saat user mencoba melakukan aksi seperti membuat pertanyaan atau memberi upvote, middleware ini mengecek apakah token yang dikirim oleh browser itu asli atau palsu.
-
+Tiap kali ada request masuk (misal mau nge-post), ada file "satpam" yang ngecek tokennya asli atau palsu.
 ```javascript
-import jwt from 'jsonwebtoken';
-
 export default function auth(req, res, next) {
-  // Ambil token dari header request
+  // Ambil token dari header
   const token = req.headers.authorization?.split(' ')[1];
 
-  // Jika tidak ada token, tolak akses
   if (!token) return res.status(401).json({ error: 'Token tidak ditemukan' });
 
   try {
-    // Cek keaslian token menggunakan kunci rahasia server
+    // Cek keaslian token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;  // Simpan data user ke dalam request
-    next();              // Lanjutkan ke proses berikutnya
+    req.user = decoded;  // Kalo asli, datanya disimpen biar bisa dipake di proses selanjutnya
+    next();
   } catch {
     res.status(401).json({ error: 'Token tidak valid' });
   }
@@ -56,91 +49,74 @@ export default function auth(req, res, next) {
 
 ---
 
-## 2. Enkripsi Password dengan Bcrypt
+## 2. Enkripsi Password (Bcrypt)
 📍 **File:** `server/routes/auth.js`
 
-Password pengguna tidak pernah disimpan dalam bentuk tulisan asli di database. Sebelum disimpan, password diubah menjadi kode acak (hash) menggunakan library `bcryptjs`. Bahkan admin database pun tidak bisa melihat password aslinya.
+Aku ga pernah nyimpen password mentah-mentah di database (bahaya banget!). Sebelum disimpan, password diacak dulu pakai library `bcryptjs`. Jadi kalaupun databasenya jebol, orang cuma liat teks acak.
 
-### Saat Register (Mengenkripsi Password)
+**Pas Register (Diacak):**
 ```javascript
-import bcrypt from 'bcryptjs';
-
-// Enkripsi password secara manual sebelum disimpan ke database
+// Ngacak password pakai bcrypt
 const passwordHash = await bcrypt.hash(password, 10);
 
-const user = new User({ username, email, passwordHash });
+const user = new User({ username, email, password: passwordHash });
 await user.save();
 ```
 
-### Saat Login (Mencocokkan Password)
+**Pas Login (Dicocokkan):**
 ```javascript
-// Bandingkan password yang diketik user dengan hash yang ada di database
-const valid = await bcrypt.compare(password, user.passwordHash);
+// Ngebandingin password yang diketik sama hasil acakan di database
+const valid = await bcrypt.compare(password, user.password);
 if (!valid) return res.status(400).json({ error: 'Password salah' });
 ```
 
 ---
 
-## 3. Fitur Trending (Sorting dengan Javascript)
+## 3. Fitur Trending (Sorting Javascript)
 📍 **File:** `server/routes/posts.js`
 
-Untuk menampilkan pertanyaan yang paling populer (banyak upvote), sistem mengambil semua data dari database, lalu mengurutkannya menggunakan fungsi `.sort()` bawaan Javascript.
+Buat nampilin 5 pertanyaan terpopuler (Trending), logikanya cukup simple. Aku ambil semua data post dari database, terus aku urutin secara manual pakai fungsi `.sort()` dari Javascript, lalu dipotong ambil 5 teratas.
 
 ```javascript
-// Ambil semua post dari database
-let posts = await Post.find({ isDeleted: false })
-  .populate('authorId', 'username');
+let posts = await Post.find({ isDeleted: false }).populate('authorId', 'username');
 
-// Urutkan berdasarkan jumlah upvote terbanyak menggunakan Javascript
+// Urutkan menurun berdasarkan jumlah isi array upvotes
 posts.sort((a, b) => b.upvotes.length - a.upvotes.length);
 
-// Ambil 5 teratas saja
+// Ambil top 5 aja
 posts = posts.slice(0, 5);
 ```
 
 ---
 
-## 4. Statistik Forum
-📍 **File:** `server/routes/posts.js` (Endpoint `/stats`)
+## 4. Statistik Forum (Beranda)
+📍 **File:** `server/routes/posts.js`
 
-Halaman utama menampilkan statistik seperti jumlah total diskusi, komentar, pertanyaan terjawab, dan pengguna. Data ini dihitung satu per satu dari database menggunakan fungsi `countDocuments()` milik MongoDB.
+Di halaman depan kan ada angka total diskusi, komentar, dsb. Itu cara ngitungnya langsung nembak ke database pakai perintah bawaan `countDocuments()`. Cepat dan akurat.
 
 ```javascript
-// Hitung statistik satu per satu
 const totalPosts = await Post.countDocuments({ isDeleted: false });
 const totalComments = await Comment.countDocuments({ isDeleted: false });
 const totalSolved = await Post.countDocuments({ isDeleted: false, isSolved: true });
 const totalUsers = await User.countDocuments();
-
-res.json({ totalPosts, totalComments, totalSolved, totalUsers });
 ```
 
 ---
 
-## 5. Fitur View Count (Unik per User)
-📍 **File:** `server/routes/posts.js` (Endpoint `GET /:id`)
+## 5. Fitur View Count Anti-Spam
+📍 **File:** `server/routes/posts.js`
 
-Saat membuka detail sebuah diskusi, sistem mengecek apakah pengguna yang sedang login sudah pernah melihat diskusi ini sebelumnya. Jika belum, jumlah viewer akan bertambah. Jika sudah pernah, tidak dihitung lagi agar jumlahnya akurat.
+Biar angka *view* ga nambah terus-terusan tiap kali di-refresh sama orang yang sama, aku bikin logikanya ngecek ID usernya dulu.
 
 ```javascript
-// Coba baca token untuk mengetahui siapa yang sedang membuka halaman ini
-let userId = null;
-const authHeader = req.headers.authorization;
-if (authHeader && authHeader.startsWith('Bearer ')) {
-  try {
-    const decoded = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET);
-    userId = decoded.id;
-  } catch {
-    // Jika token tidak valid, abaikan (tamu tetap bisa membaca)
-  }
-}
-
-// Jika user login dan belum pernah lihat post ini, tambahkan view count
+// Kalau user lagi login (punya userId)
 if (userId) {
+  // Cek apakah ID usernya udah ada di dalam array viewers post ini?
   const alreadyViewed = post.viewers.some(v => v.toString() === userId);
+  
   if (!alreadyViewed) {
-    post.viewers.push(userId);
-    post.viewCount += 1;
+    post.viewers.push(userId); // Masukin ID-nya ke daftar
+    post.viewCount += 1;       // Tambahin angka view-nya
     await post.save();
   }
 }
@@ -148,55 +124,41 @@ if (userId) {
 
 ---
 
-## 6. Relasi Antar Koleksi (Populate)
+## 6. Relasi Data di MongoDB (Populate)
+📍 **File:** Backend Routes
 
-Salah satu kekuatan utama MongoDB + Mongoose di proyek ini adalah penggunaan **populate** untuk menghubungkan data antar koleksi. Misalnya, sebuah Post menyimpan `authorId` yang merujuk ke koleksi User. Dengan `.populate()`, kita bisa langsung mendapatkan data username tanpa harus menulis query tambahan.
+Di tabel `Post`, aku aslinya cuma nyimpen ID si pembuat (`authorId`). Tapi biar pas dimunculin di web bisa langsung keluar nama `username`-nya tanpa harus bikin query nyari user lagi, aku pakai fitur sakti bernama **`.populate()`**.
 
 ```javascript
 const post = await Post.findById(id)
-  .populate('authorId', 'username')       // Gabungkan data User (ambil username-nya saja)
-  .populate('categoryId', 'name slug')    // Gabungkan data Category
-  .populate('tags', 'name');              // Gabungkan data Tag
+  .populate('authorId', 'username')       // Tolong gabungin data username dari koleksi User dong!
+  .populate('categoryId', 'name slug');   // Gabungin juga nama kategorinya
 ```
 
 ---
 
-## 7. Operasi CRUD Lengkap
-
-Proyek ini mengimplementasikan semua operasi dasar database (CRUD):
-
-| Operasi   | Method | Endpoint               | Fungsi                          |
-| :-------- | :----- | :--------------------- | :------------------------------ |
-| **Create** | POST   | `/api/posts`           | Membuat pertanyaan baru         |
-| **Read**   | GET    | `/api/posts`           | Melihat daftar pertanyaan       |
-| **Read**   | GET    | `/api/posts/:id`       | Melihat detail pertanyaan       |
-| **Update** | PUT    | `/api/posts/:id/upvote`| Memberi/menghapus upvote        |
-| **Update** | PUT    | `/api/posts/:id/solve` | Menandai pertanyaan terjawab    |
-
----
-
-## 8. Frontend React: Axios Interceptors (Pencegat API)
+## 7. Trik Frontend 1: Axios Interceptors (Pencegat API)
 📍 **File:** `src/services/api.js`
 
-Biasanya programmer pemula akan memasukkan token ke dalam *header* secara manual satu per satu di setiap fungsi pengambilan data. Proyek ini menggunakan **Axios Interceptor** yang bertindak sebagai "Pencegat Otomatis".
+Biar aku ga capek ngetik nempelin token JWT satu-satu tiap kali mau *fetch* data ke backend, aku bikin sistem "Pencegat Otomatis" di Axios.
 
-Kapanpun aplikasi (frontend) ingin mengambil atau mengirim data ke server, Interceptor akan menempelkan token KTP Digital ke dalam koneksi secara otomatis. Jika server membalas dengan error 401 (Token Kadaluarsa), Interceptor akan langsung menendang pengguna kembali ke halaman Login.
+Dia bakal ngecegat tiap *request* keluar dan nempelin token. Kalo pas *request* ternyata tokennya ditolak (dapat error 401 karena kadaluarsa), sistem otomatis ngehapus tokennya dan nendang aku balik ke halaman `/login`.
 
 ```javascript
-// Memasang token secara otomatis ke setiap request
+// Nyegat pas mau jalan (nempelin token)
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Menangani error jika token sudah kadaluarsa (401 Unauthorized)
+// Nyegat pas nerima balasan error
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      window.location.href = '/login'; // Tendang ke halaman login
     }
     return Promise.reject(error);
   }
@@ -205,40 +167,60 @@ api.interceptors.response.use(
 
 ---
 
-## 9. Frontend React: Protected Route (Pembungkus Keamanan URL)
+## 8. Trik Frontend 2: Protected Route (Penjaga Halaman)
 📍 **File:** `src/App.jsx`
 
-Daripada mengecek status login di setiap halaman satu per satu (misal di halaman Notifikasi dan Buat Pertanyaan), aplikasi ini membuat satu komponen pembungkus pintar bernama `<ProtectedRoute>`. 
+Daripada aku nulis kode ngecek login di setiap komponen halaman, aku mending bikin satu bungkus komponen pelindung bernama `<ProtectedRoute>`. Halaman apapun yang dibungkus pakai ini ga akan bisa dibuka kalau belum login.
 
 ```javascript
+// Bikin komponen pelindung
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
-  // Jika tidak punya token, tendang ke halaman login
+  // Ga punya token? Bye, balik ke login!
   if (!token) return <Navigate to="/login" replace />;
-  // Jika punya token, izinkan masuk ke halaman yang dituju
   return children;
 }
 
-// Rute ini aman karena sudah dibungkus
+// Cara pakainya di rute utama (App.jsx)
 <Route path="/tanya" element={<ProtectedRoute><AskPage /></ProtectedRoute>} />
-<Route path="/notifikasi" element={<ProtectedRoute><NotifPage /></ProtectedRoute>} />
 ```
 
 ---
 
-## 10. Frontend React: Optimasi Performa dengan `useCallback`
-📍 **File:** `src/pages/ForumPage.jsx`
+## 9. Penjelasan Arsitektur Database (Analogi Restoran)
 
-Di React, memanggil fungsi secara sembarangan di dalam `useEffect` bisa membuat aplikasi *crash* karena *Infinite Loop* (me-render ulang halaman ribuan kali per detik). Untuk mencegah hal ini, fungsi pengambilan data forum dibungkus dengan metode yang aman menggunakan `useCallback`.
+Dosen sering nanya: *"Kok aplikasi databasenya jalan padahal aplikasi Compass-nya ga dibuka?"* 
+Jawabannya gampang, pakai analogi restoran:
+1. **Mesin MongoDB (`mongod.exe`)** = Koki di dalam dapur. Mesin ini aslinya udah nyala otomatis di *background* Windows tiap laptop nyala.
+2. **Aplikasi Backend (Node.js)** = Pelayan. Dia langsung konek ke dapur (port 27017) lewat library Mongoose.
+3. **MongoDB Compass** = Cuma **Layar CCTV**. Fungsinya cuma biar kita bisa ngintip data secara visual.
 
+Karena si Pelayan udah bisa langsung ngomong sama si Koki, webnya tetap bisa jalan tanpa harus buka CCTV (Compass) sama sekali!
+
+---
+
+## 10. Panduan Baca Data Pakai Terminal (mongosh)
+
+Kalau mau ngeliatin isi database tanpa Compass, aku bisa buka terminal (CMD/PowerShell) dan pakai **MongoDB Shell**. 
+*(Catatan: Kalo dapet error "mongosh is not recognized", itu cuma karena terminalnya belom ke-refresh. Tinggal tutup terminalnya, terus buka terminal baru).*
+
+**Cara Pakainya:**
+1. Masuk ke mode shell: ketik `mongosh`
+2. Liat daftar database: `show dbs`
+3. Masuk ke database web ini: `use teluqna`
+4. Liat nama tabelnya: `show collections`
+
+**Contoh Query (Ngambil Data):**
 ```javascript
-// Fungsi ini hanya akan dibuat ulang JIKA nilai filter (kategori, status, sort) berubah
-const fetchPosts = useCallback(async () => {
-    // ... proses ambil data dari server ...
-}, [activeCategory, activeStatus, activeSort, searchParams]); 
+// Liat semua pengguna biar rapi
+db.users.find().pretty()
 
-// Fungsi akan dijalankan tanpa menyebabkan Infinite Loop
-useEffect(() => { 
-   fetchPosts(); 
-}, [fetchPosts]);
+// Nyari pengguna spesifik
+db.users.find({ username: "andi" }).pretty()
+
+// Ngitung total postingan
+db.posts.countDocuments()
+
+// Kalo udah kelar demo, ketik ini buat keluar:
+exit
 ```

@@ -17,7 +17,7 @@ export default function AuthPage() {
     try {
       const endpoint = isLogin ? '/auth/login' : '/auth/register';
       const payload = isLogin
-        ? { email: form.email, password: form.password }
+        ? { username: form.username, password: form.password }
         : { username: form.username, email: form.email, password: form.password };
       const res = await api.post(endpoint, payload);
       localStorage.setItem('token', res.data.token);
@@ -31,14 +31,32 @@ export default function AuthPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, rgba(59,130,246,0.08) 0%, var(--color-bg-page) 50%, rgba(59,130,246,0.12) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      {/* Back Button */}
+      <button
+        onClick={() => navigate('/forum')}
+        title="Kembali ke Forum"
+        style={{
+          position: 'fixed', top: 20, left: 20,
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          width: 38, height: 38,
+          background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+          borderRadius: 10, cursor: 'pointer', fontSize: 18, color: 'var(--color-text-secondary)',
+          transition: 'all 0.2s ease', zIndex: 100
+        }}
+        onMouseEnter={e => { e.currentTarget.style.color = 'var(--color-primary)'; e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
+        onMouseLeave={e => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.borderColor = 'var(--color-border)'; }}
+      >
+        &#8592;
+      </button>
+
       <div style={{ width: '100%', maxWidth: 440 }} className="animate-in">
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 64, height: 64, background: 'var(--color-primary)', borderRadius: 18, boxShadow: '0 8px 24px rgba(59,130,246,0.3)', marginBottom: 16 }}>
-            <span style={{ color: '#fff', fontWeight: 700, fontSize: 28 }}>K</span>
+            <span style={{ color: '#fff', fontWeight: 700, fontSize: 28 }}>T</span>
           </div>
           <h1 style={{ fontSize: 32, fontWeight: 700, color: 'var(--color-text-primary)', letterSpacing: '-0.02em' }}>
-            Kampus<span style={{ color: 'var(--color-primary)' }}>Ask</span>
+            Tel-U <span style={{ color: 'var(--color-primary)' }}>QnA</span>
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', marginTop: 8, fontSize: 14 }}>Forum Diskusi & Tanya Jawab Mahasiswa</p>
         </div>
@@ -56,19 +74,19 @@ export default function AuthPage() {
           )}
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 8 }}>Username</label>
+              <input type="text" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })}
+                placeholder="Masukkan username" required className="ka-input" />
+            </div>
+
             {!isLogin && (
               <div>
-                <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 8 }}>Username</label>
-                <input type="text" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })}
-                  placeholder="Masukkan username" required className="ka-input" />
+                <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 8 }}>Email</label>
+                <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="nama@mahasiswa.ac.id" required className="ka-input" />
               </div>
             )}
-
-            <div>
-              <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 8 }}>Email</label>
-              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="nama@mahasiswa.ac.id" required className="ka-input" />
-            </div>
 
             <div>
               <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 8 }}>Password</label>
@@ -91,7 +109,8 @@ export default function AuthPage() {
           </p>
         </div>
 
-        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--color-text-muted)', marginTop: 28 }}>
+
+        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--color-text-muted)', marginTop: 16 }}>
           Tel-U QnA — Forum Diskusi Mahasiswa
         </p>
       </div>

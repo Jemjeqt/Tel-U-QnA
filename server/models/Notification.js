@@ -10,7 +10,7 @@ const notificationSchema = new mongoose.Schema({
   postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', required: true },
   message: { type: String, default: '' },
   isRead: { type: Boolean, default: false },
-}, { timestamps: true });
+}, { timestamps: true, versionKey: false });
 
 // Index sesuai spesifikasi
 notificationSchema.index({ userId: 1, isRead: 1 });

@@ -3,6 +3,6 @@ import mongoose from 'mongoose';
 const tagSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true, trim: true },
   postCount: { type: Number, default: 0 },
-});
+}, { versionKey: false });
 
 export default mongoose.model('Tag', tagSchema);

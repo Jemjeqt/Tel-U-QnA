@@ -15,6 +15,7 @@ Dibangun menggunakan modern *tech stack* (MERN / MongoDB, Express, React, Node.j
 - **Notifikasi Real-time**: Dapatkan pemberitahuan saat ada yang menjawab pertanyaanmu atau jawabanmu dipilih sebagai yang terbaik.
 - **Trending & Terbaru**: Temukan diskusi terhangat berdasarkan jumlah *upvote* atau *timeline* terbaru.
 - **Pencarian Cerdas**: Cari topik spesifik melalui fitur pencarian (*Full-text search* MongoDB).
+- **Hapus Konten (Soft Delete)**: Penulis dapat menghapus pertanyaan atau komentarnya secara aman tanpa merusak struktur data (fitur keamanan *soft delete*).
 
 ---
 
@@ -47,8 +48,8 @@ Pastikan di komputer Anda sudah terpasang:
 
 1. **Clone repositori ini**
    ```bash
-   git clone https://github.com/username/kampus-ask.git
-   cd kampus-ask
+   git clone https://github.com/username/telu-qna.git
+   cd telu-qna
    ```
 
 2. **Instalasi Dependencies**
@@ -85,7 +86,7 @@ Pastikan di komputer Anda sudah terpasang:
 ## Struktur Folder Utama
 
 ```text
-kampus-ask/
+telu-qna/
 ├── server/             # Kode Backend (Express API)
 │   ├── index.js        # Entry point server
 │   ├── middleware/     # Auth JWT verifier

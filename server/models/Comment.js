@@ -11,7 +11,7 @@ const commentSchema = new mongoose.Schema({
   }],
   isAccepted: { type: Boolean, default: false },
   isDeleted: { type: Boolean, default: false },
-}, { timestamps: true });
+}, { timestamps: true, versionKey: false });
 
 // Indexes sesuai spesifikasi
 commentSchema.index({ postId: 1 });

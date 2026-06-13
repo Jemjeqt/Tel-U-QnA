@@ -22,7 +22,7 @@ router.post('/register', async (req, res) => {
     // Enkripsi password secara manual menggunakan bcrypt
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const user = new User({ username, email, passwordHash });
+    const user = new User({ username, email, password: passwordHash });
     await user.save();
 
     const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -35,12 +35,12 @@ router.post('/register', async (req, res) => {
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ error: 'Email tidak ditemukan' });
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+    if (!user) return res.status(400).json({ error: 'Username tidak ditemukan' });
 
     // Bandingkan password yang diketik dengan hash yang tersimpan di database
-    const valid = await bcrypt.compare(password, user.passwordHash);
+    const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ error: 'Password salah' });
 
     const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -53,7 +53,7 @@ router.post('/login', async (req, res) => {
 // GET /api/auth/me
 router.get('/me', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-passwordHash');
+    const user = await User.findById(req.user.id).select('-password');
     if (!user) return res.status(404).json({ error: 'User tidak ditemukan' });
     res.json(user);
   } catch (err) {

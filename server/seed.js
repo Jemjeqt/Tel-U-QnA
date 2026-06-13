@@ -30,10 +30,10 @@ async function seed() {
 
   // Create users — setiap user di-hash passwordnya masing-masing
   const users = await User.create([
-    { username: 'andi_r',  email: 'andi@mahasiswa.ac.id',  passwordHash: await h('password123') },
-    { username: 'budi_s',  email: 'budi@mahasiswa.ac.id',  passwordHash: await h('password123') },
-    { username: 'citra_w', email: 'citra@mahasiswa.ac.id', passwordHash: await h('password123') },
-    { username: 'dina_p',  email: 'dina@mahasiswa.ac.id',  passwordHash: await h('password123') },
+    { username: 'andi',  email: 'andi@mahasiswa.ac.id',  password: await h('password123') },
+    { username: 'budi',  email: 'budi@mahasiswa.ac.id',  password: await h('password123') },
+    { username: 'citra', email: 'citra@mahasiswa.ac.id', password: await h('password123') },
+    { username: 'dina',  email: 'dina@mahasiswa.ac.id',  password: await h('password123') },
   ]);
   console.log(`Created ${users.length} users`);
 
@@ -241,21 +241,21 @@ async function seed() {
       userId: users[0]._id,
       type: 'new_answer',
       postId: posts[0]._id,
-      message: 'budi_s menjawab pertanyaan "Kapan pakai embed vs reference di MongoDB?"',
+      message: 'budi menjawab pertanyaan "Kapan pakai embed vs reference di MongoDB?"',
       isRead: false,
     },
     {
       userId: users[0]._id,
       type: 'new_reply',
       postId: posts[0]._id,
-      message: 'citra_w membalas komentar Anda di "Kapan pakai embed vs reference?"',
+      message: 'citra membalas komentar Anda di "Kapan pakai embed vs reference?"',
       isRead: false,
     },
     {
       userId: users[0]._id,
       type: 'new_answer',
       postId: posts[2]._id,
-      message: 'citra_w menjawab pertanyaan "Aggregation Pipeline MongoDB untuk pemula"',
+      message: 'citra menjawab pertanyaan "Aggregation Pipeline MongoDB untuk pemula"',
       isRead: true,
     },
 
@@ -271,14 +271,14 @@ async function seed() {
       userId: users[1]._id,
       type: 'new_reply',
       postId: posts[0]._id,
-      message: 'andi_r membalas jawaban Anda di "Kapan pakai embed vs reference?"',
+      message: 'andi membalas jawaban Anda di "Kapan pakai embed vs reference?"',
       isRead: false,
     },
     {
       userId: users[1]._id,
       type: 'new_answer',
       postId: posts[3]._id,
-      message: 'dina_p menjawab pertanyaan "Perbedaan Normalisasi 1NF, 2NF, dan 3NF?"',
+      message: 'dina menjawab pertanyaan "Perbedaan Normalisasi 1NF, 2NF, dan 3NF?"',
       isRead: true,
     },
 
@@ -294,7 +294,7 @@ async function seed() {
       userId: users[2]._id,
       type: 'new_reply',
       postId: posts[2]._id,
-      message: 'budi_s membalas komentar Anda di "Aggregation Pipeline MongoDB"',
+      message: 'budi membalas komentar Anda di "Aggregation Pipeline MongoDB"',
       isRead: false,
     },
     {
@@ -317,14 +317,14 @@ async function seed() {
       userId: users[3]._id,
       type: 'new_answer',
       postId: posts[0]._id,
-      message: 'budi_s menjawab pertanyaan "Kapan pakai embed vs reference di MongoDB?"',
+      message: 'budi menjawab pertanyaan "Kapan pakai embed vs reference di MongoDB?"',
       isRead: false,
     },
     {
       userId: users[3]._id,
       type: 'new_reply',
       postId: posts[1]._id,
-      message: 'citra_w membalas komentar Anda di "Apa itu indexing di MongoDB?"',
+      message: 'citra membalas komentar Anda di "Apa itu indexing di MongoDB?"',
       isRead: true,
     },
   ]);
@@ -332,10 +332,10 @@ async function seed() {
 
   console.log('\n✅ Seed completed!');
   console.log('\nAkun demo:');
-  console.log('  andi@mahasiswa.ac.id / password123');
-  console.log('  budi@mahasiswa.ac.id / password123');
-  console.log('  citra@mahasiswa.ac.id / password123');
-  console.log('  dina@mahasiswa.ac.id / password123');
+  console.log('  andi / password123');
+  console.log('  budi / password123');
+  console.log('  citra / password123');
+  console.log('  dina / password123');
 
   await mongoose.disconnect();
 }

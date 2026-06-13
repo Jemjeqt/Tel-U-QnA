@@ -77,8 +77,7 @@ Menyimpan data akun mahasiswa.
   "_id": ObjectId("user001"),
   "username": "andi_r",
   "email": "andi@mahasiswa.ac.id",
-  "passwordHash": "hashed_string",
-  "role": "user",
+  "password": "hashed_string",
   "createdAt": ISODate("2025-01-10"),
   "updatedAt": ISODate("2025-01-10")
 }
@@ -712,6 +711,7 @@ Seluruh fitur inti yang dirancang untuk platform ini telah diimplementasikan sep
 - Detail pertanyaan + jawaban + nested reply
 - Upvote pertanyaan dan jawaban
 - Mark as Solved (Jawaban Terbaik)
+- Hapus Pertanyaan & Komentar (Soft Delete untuk Integritas Data)
 - Form ajukan pertanyaan dengan tag dinamis
 - Sistem notifikasi (3 tipe)
 - Pencarian kata kunci (Full-text search)
