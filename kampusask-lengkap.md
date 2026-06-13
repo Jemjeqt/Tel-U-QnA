@@ -254,35 +254,20 @@ db.posts.updateOne(
 
 ## 8. Query Penting
 
-### 8.1 Ambil semua post beserta detail author dan tags (Aggregation)
+### 8.1 Ambil semua post beserta detail author dan tags (Populate)
+
+Implementasi aktual menggunakan **Mongoose `.populate()`** — cara Mongoose untuk meng-join dokumen antar collection secara otomatis berdasarkan ObjectId reference.
 
 ```javascript
-db.posts.aggregate([
-  { $match: { isDeleted: false, isSolved: false } },
-  {
-    $lookup: {
-      from: "users",
-      localField: "authorId",
-      foreignField: "_id",
-      as: "author"
-    }
-  },
-  {
-    $lookup: {
-      from: "tags",
-      localField: "tags",
-      foreignField: "_id",
-      as: "tagDetails"
-    }
-  },
-  {
-    $addFields: {
-      upvoteCount: { $size: "$upvotes" }
-    }
-  },
-  { $sort: { upvoteCount: -1, createdAt: -1 } }
-])
+// Implementasi di server/routes/posts.js
+const posts = await Post.find({ isDeleted: false })
+  .populate('authorId', 'username')     // join ke collection users, ambil field username
+  .populate('categoryId', 'name slug')  // join ke collection categories
+  .populate('tags', 'name')             // join ke collection tags
+  .sort({ createdAt: -1 });
 ```
+
+> `.populate()` Mongoose setara dengan `$lookup` pada Aggregation Pipeline MongoDB — keduanya melakukan join antar collection berdasarkan ObjectId reference, dengan hasil yang sama secara fungsional.
 
 ### 8.2 Ambil comments berdasarkan postId, terurut hierarkis
 
@@ -297,26 +282,21 @@ db.comments.find(
 
 ### 8.3 Trending posts berdasarkan jumlah upvote
 
+Implementasi aktual menggunakan JavaScript sorting di sisi aplikasi, kemudian mengambil **5 teratas**:
+
 ```javascript
-db.posts.aggregate([
-  { $match: { isDeleted: false } },
-  {
-    $addFields: {
-      upvoteCount: { $size: "$upvotes" }
-    }
-  },
-  { $sort: { upvoteCount: -1 } },
-  { $limit: 10 },
-  {
-    $lookup: {
-      from: "users",
-      localField: "authorId",
-      foreignField: "_id",
-      as: "author"
-    }
-  }
-])
+// Implementasi di server/routes/posts.js
+let posts = await Post.find({ isDeleted: false })
+  .populate('authorId', 'username');
+
+// Urutkan berdasarkan jumlah upvote (descending) menggunakan JavaScript
+posts.sort((a, b) => b.upvotes.length - a.upvotes.length);
+
+// Ambil 5 teratas saja
+posts = posts.slice(0, 5);
 ```
+
+> Pendekatan JavaScript `.sort()` + `.slice()` digunakan karena datanya relatif kecil. Untuk skala besar, pendekatan Aggregation Pipeline dengan `$sort` + `$limit` lebih efisien.
 
 ### 8.4 Filter post berdasarkan tag tertentu
 
@@ -639,7 +619,7 @@ Setiap aksi di frontend berkorespondensi langsung dengan operasi MongoDB:
 
 | Aksi User | Operasi MongoDB |
 |---|---|
-| Login | `db.users.findOne({ email })` → verifikasi passwordHash |
+| Login | `db.users.findOne({ username })` → verifikasi passwordHash |
 | Lihat forum | `db.posts.find({ isDeleted: false }).sort({ createdAt: -1 })` |
 | Filter kategori | `db.posts.find({ categoryId, isDeleted: false })` |
 | Filter tag | `db.posts.find({ tags: ObjectId("tagId"), isDeleted: false })` |
@@ -648,6 +628,8 @@ Setiap aksi di frontend berkorespondensi langsung dengan operasi MongoDB:
 | Kirim jawaban | `db.comments.insertOne({ postId, parentId: null, ... })` |
 | Reply komentar | `db.comments.insertOne({ postId, parentId: commentId, ... })` |
 | Mark as Solved | `db.posts.updateOne(...)` + `db.comments.updateOne(...)` |
+| Hapus pertanyaan | `db.posts.updateOne({ _id }, { $set: { isDeleted: true } })` *(soft delete)* |
+| Hapus komentar | `db.comments.updateOne({ _id }, { $set: { isDeleted: true } })` *(soft delete)* |
 | Lihat notifikasi | `db.notifications.find({ userId, isRead: false })` |
 | Submit pertanyaan | `db.posts.insertOne(...)` + increment `tags.postCount` |
 | Cari kata kunci | `db.posts.find({ $text: { $search: "..." } })` |
@@ -682,10 +664,11 @@ teluqna/
 │   └── main.jsx
 ├── server/                       ← Backend (Node.js + Express)
 │   ├── routes/
-│   │   ├── posts.js
-│   │   ├── comments.js
-│   │   ├── users.js
-│   │   └── notifications.js
+│   │   ├── auth.js              ← register, login
+│   │   ├── posts.js             ← CRUD post, upvote, solve, trending, stats
+│   │   ├── comments.js          ← CRUD komentar & reply
+│   │   ├── notifications.js     ← notifikasi per user
+│   │   └── meta.js              ← categories & tags
 │   ├── models/
 │   │   ├── Post.js
 │   │   ├── Comment.js
@@ -694,7 +677,8 @@ teluqna/
 │   │   ├── Tag.js
 │   │   └── Category.js
 │   ├── middleware/
-│   │   └── auth.js
+│   │   └── auth.js              ← JWT verification middleware
+│   ├── seed.js                  ← data awal untuk development
 │   └── index.js
 ├── package.json
 └── README.md

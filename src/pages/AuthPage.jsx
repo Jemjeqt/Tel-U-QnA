@@ -84,7 +84,10 @@ export default function AuthPage() {
               <div>
                 <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 8 }}>Email</label>
                 <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  placeholder="nama@mahasiswa.ac.id" required className="ka-input" />
+                  placeholder="akun@student.telkomuniversity.ac.id" required className="ka-input" />
+                <p style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 6 }}>
+                  Login menggunakan akun <strong>Telkom University</strong>
+                </p>
               </div>
             )}
 
@@ -102,7 +105,7 @@ export default function AuthPage() {
 
           <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--color-text-secondary)', marginTop: 28 }}>
             {isLogin ? 'Belum punya akun?' : 'Sudah punya akun?'}{' '}
-            <button onClick={() => { setIsLogin(!isLogin); setError(''); }}
+            <button onClick={() => { setIsLogin(!isLogin); setError(''); navigate(isLogin ? '/register' : '/login'); }}
               style={{ color: 'var(--color-primary)', fontWeight: 600, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, textDecoration: 'underline', textUnderlineOffset: 2 }}>
               {isLogin ? 'Daftar sekarang' : 'Masuk di sini'}
             </button>

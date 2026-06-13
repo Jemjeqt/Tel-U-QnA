@@ -27,7 +27,7 @@ router.post('/:postId/comments', auth, async (req, res) => {
       return res.status(400).json({ error: 'Jawaban tidak boleh kosong' });
     }
 
-    const post = await Post.findById(req.params.postId);
+    const post = await Post.findOne({ _id: req.params.postId, isDeleted: false });
     if (!post) return res.status(404).json({ error: 'Pertanyaan tidak ditemukan' });
 
     const comment = await Comment.create({
@@ -74,7 +74,7 @@ router.post('/:postId/comments', auth, async (req, res) => {
 // PUT /api/comments/:id/upvote — toggle upvote on comment
 router.put('/:id/upvote', auth, async (req, res) => {
   try {
-    const comment = await Comment.findById(req.params.id);
+    const comment = await Comment.findOne({ _id: req.params.id, isDeleted: false });
     if (!comment) return res.status(404).json({ error: 'Komentar tidak ditemukan' });
 
     const existingIdx = comment.upvotes.findIndex(u => u.userId.toString() === req.user.id);

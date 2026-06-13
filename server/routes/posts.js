@@ -179,7 +179,7 @@ router.post('/', auth, async (req, res) => {
 // PUT /api/posts/:id/upvote — toggle upvote
 router.put('/:id/upvote', auth, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findOne({ _id: req.params.id, isDeleted: false });
     if (!post) return res.status(404).json({ error: 'Post tidak ditemukan' });
 
     const existingIdx = post.upvotes.findIndex(u => u.userId.toString() === req.user.id);
@@ -202,6 +202,10 @@ router.put('/:id/solve', auth, async (req, res) => {
     const post = await Post.findOne({ _id: req.params.id, authorId: req.user.id });
     if (!post) return res.status(403).json({ error: 'Hanya pemilik pertanyaan yang bisa menandai jawaban terbaik' });
 
+    // Validasi: pastikan komentar ada dan milik postingan ini
+    const comment = await Comment.findOne({ _id: commentId, postId: post._id, isDeleted: false });
+    if (!comment) return res.status(400).json({ error: 'Komentar tidak ditemukan atau bukan bagian dari pertanyaan ini' });
+
     // Update status post menjadi terjawab
     post.isSolved = true;
     post.acceptedCommentId = commentId;
@@ -209,7 +213,8 @@ router.put('/:id/solve', auth, async (req, res) => {
 
     // Update flag pada comment
     await Comment.updateMany({ postId: post._id, isAccepted: true }, { isAccepted: false });
-    const comment = await Comment.findByIdAndUpdate(commentId, { isAccepted: true }, { new: true });
+    comment.isAccepted = true;
+    await comment.save();
 
     // Kirim notifikasi ke penjawab
     if (comment && comment.authorId.toString() !== req.user.id) {

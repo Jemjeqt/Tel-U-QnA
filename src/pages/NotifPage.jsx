@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
 import NotifItem from '../components/NotifItem';
 
@@ -36,7 +37,24 @@ export default function NotifPage() {
   const read = notifications.filter(n => n.isRead);
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '36px 32px' }}>
+    <div style={{ maxWidth: 720, margin: '0 auto', padding: '28px 32px' }}>
+      {/* Back */}
+      <Link to="/forum" style={{
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        fontSize: 13, color: 'var(--color-text-muted)', textDecoration: 'none',
+        fontWeight: 500, marginBottom: 24, padding: '6px 12px',
+        background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+        borderRadius: 10, transition: 'all 0.15s',
+      }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-border-hover)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; }}
+      >
+        <svg style={{ width: 15, height: 15 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        Kembali
+      </Link>
+
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
         <div>

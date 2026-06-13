@@ -14,6 +14,14 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Semua field wajib diisi' });
     }
 
+    // Validasi email domain - hanya @student.telkomuniversity.ac.id
+    const allowedDomain = '@student.telkomuniversity.ac.id';
+    if (!email.toLowerCase().endsWith(allowedDomain)) {
+      return res.status(400).json({
+        error: `Hanya email dengan domain ${allowedDomain} yang diizinkan untuk mendaftar`
+      });
+    }
+
     const existing = await User.findOne({ $or: [{ email }, { username }] });
     if (existing) {
       return res.status(400).json({ error: 'Email atau username sudah terdaftar' });
@@ -25,8 +33,15 @@ router.post('/register', async (req, res) => {
     const user = new User({ username, email, password: passwordHash });
     await user.save();
 
-    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.status(201).json({ token, user: { id: user._id, username: user.username, email: user.email } });
+    const token = jwt.sign(
+      { id: user._id, username: user.username, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    res.status(201).json({
+      token,
+      user: { id: user._id, username: user.username, email: user.email, role: user.role }
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -39,12 +54,24 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ username });
     if (!user) return res.status(400).json({ error: 'Username tidak ditemukan' });
 
+    // Cek apakah user diblokir
+    if (user.isBanned) {
+      return res.status(403).json({ error: 'Akun Anda telah diblokir. Hubungi admin untuk informasi lebih lanjut' });
+    }
+
     // Bandingkan password yang diketik dengan hash yang tersimpan di database
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ error: 'Password salah' });
 
-    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: user._id, username: user.username, email: user.email } });
+    const token = jwt.sign(
+      { id: user._id, username: user.username, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    res.json({
+      token,
+      user: { id: user._id, username: user.username, email: user.email, role: user.role }
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

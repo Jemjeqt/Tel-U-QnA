@@ -12,17 +12,6 @@ router.get('/', auth, async (req, res) => {
       .limit(50)
       .lean();
 
-    // Resolve postId for each notification
-    const Comment = (await import('../models/Comment.js')).default;
-    for (const n of notifications) {
-      if (n.refCollection === 'posts') {
-        n.postId = n.refId;
-      } else if (n.refCollection === 'comments') {
-        const comment = await Comment.findById(n.refId).select('postId').lean();
-        n.postId = comment?.postId || null;
-      }
-    }
-
     res.json(notifications);
   } catch (err) {
     res.status(500).json({ error: err.message });

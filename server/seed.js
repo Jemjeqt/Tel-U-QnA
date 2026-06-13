@@ -30,10 +30,11 @@ async function seed() {
 
   // Create users — setiap user di-hash passwordnya masing-masing
   const users = await User.create([
-    { username: 'andi',  email: 'andi@mahasiswa.ac.id',  password: await h('password123') },
-    { username: 'budi',  email: 'budi@mahasiswa.ac.id',  password: await h('password123') },
-    { username: 'citra', email: 'citra@mahasiswa.ac.id', password: await h('password123') },
-    { username: 'dina',  email: 'dina@mahasiswa.ac.id',  password: await h('password123') },
+    { username: 'admin', email: 'admin@student.telkomuniversity.ac.id', password: await h('admin123'), role: 'admin' },
+    { username: 'andi', email: 'andi@student.telkomuniversity.ac.id', password: await h('password123') },
+    { username: 'budi', email: 'budi@student.telkomuniversity.ac.id', password: await h('password123') },
+    { username: 'citra', email: 'citra@student.telkomuniversity.ac.id', password: await h('password123') },
+    { username: 'dina', email: 'dina@student.telkomuniversity.ac.id', password: await h('password123') },
   ]);
   console.log(`Created ${users.length} users`);
 
@@ -41,9 +42,7 @@ async function seed() {
   const categories = await Category.create([
     { name: 'Basis Data', slug: 'basis-data', description: 'Diskusi seputar mata kuliah basis data' },
     { name: 'Pemrograman Web', slug: 'pemrograman-web', description: 'Diskusi seputar pemrograman web' },
-    { name: 'Algoritma & Struktur Data', slug: 'algoritma-struktur-data', description: 'Diskusi tentang algoritma dan struktur data' },
     { name: 'Jaringan Komputer', slug: 'jaringan-komputer', description: 'Diskusi tentang jaringan komputer' },
-    { name: 'Sistem Operasi', slug: 'sistem-operasi', description: 'Diskusi tentang sistem operasi' },
   ]);
   console.log(`Created ${categories.length} categories`);
 
@@ -332,6 +331,7 @@ async function seed() {
 
   console.log('\n✅ Seed completed!');
   console.log('\nAkun demo:');
+  console.log('  admin / admin123 (ADMIN)');
   console.log('  andi / password123');
   console.log('  budi / password123');
   console.log('  citra / password123');

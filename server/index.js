@@ -20,6 +20,7 @@ import postRoutes from './routes/posts.js';
 import commentRoutes from './routes/comments.js';
 import notifRoutes from './routes/notifications.js';
 import metaRoutes from './routes/meta.js';
+import adminRoutes from './routes/admin.js';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
@@ -27,6 +28,7 @@ app.use('/api/posts', commentRoutes);        // /api/posts/:postId/comments
 app.use('/api/comments', commentRoutes);      // /api/comments/:id/upvote
 app.use('/api/notifications', notifRoutes);
 app.use('/api', metaRoutes);                  // /api/categories, /api/tags
+app.use('/api/admin', adminRoutes);            // Admin routes
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
