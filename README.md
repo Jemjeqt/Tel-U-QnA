@@ -1,110 +1,147 @@
-   # Tel-U QnA
+# Tel-U QnA
 
-**Tel-U QnA** adalah platform forum diskusi dan tanya jawab interaktif berbasis web, yang dirancang khusus untuk mewadahi kebutuhan akademis mahasiswa. Melalui Tel-U QnA, mahasiswa dapat bertanya, berdiskusi, memberikan jawaban, hingga melakukan *upvote* selayaknya platform tanya-jawab profesional, namun dengan sentuhan desain yang lebih bernuansa *academic* dan terstruktur.
-
-Dibangun menggunakan modern *tech stack* (MERN / MongoDB, Express, React, Node.js) dengan penerapan relasi database tingkat lanjut menggunakan *Aggregation Pipeline* di MongoDB.
+**Tel-U QnA** adalah platform forum tanya jawab berbasis web untuk mahasiswa Telkom University. Mahasiswa dapat bertanya, berdiskusi, memberikan jawaban, upvote, dan memilih jawaban terbaik.
 
 ---
 
 ## Fitur Utama
 
-- **Sistem Tanya & Jawab (Q&A)**: Buat pertanyaan dengan kategori mata kuliah dan *tags* yang spesifik.
-- **Nested Replies**: Komentar bersarang yang rapi (mirip Reddit/StackOverflow).
-- **Sistem Reputasi (Upvote)**: Berikan *upvote* pada pertanyaan atau jawaban yang bermanfaat.
-- **Mark as Solved**: Penanya dapat menandai satu jawaban sebagai "Jawaban Terbaik" (Solved).
-- **Notifikasi Real-time**: Dapatkan pemberitahuan saat ada yang menjawab pertanyaanmu atau jawabanmu dipilih sebagai yang terbaik.
-- **Trending & Terbaru**: Temukan diskusi terhangat berdasarkan jumlah *upvote* atau *timeline* terbaru.
-- **Pencarian Cerdas**: Cari topik spesifik melalui fitur pencarian (*Full-text search* MongoDB).
-- **Hapus Konten (Soft Delete)**: Penulis dapat menghapus pertanyaan atau komentarnya secara aman tanpa merusak struktur data (fitur keamanan *soft delete*).
+- **Forum Q&A** — Buat pertanyaan dengan kategori dan tag
+- **Nested Comments** — Balas komentar bersarang (Reddit/StackOverflow style)
+- **Upvote System** — Beri upvote pada pertanyaan atau jawaban
+- **Pilih Jawaban Terbaik** — Pemilik pertanyaan bisa tandai solved
+- **Notifikasi** — Pemberitahuan saat ada jawaban/balasan baru
+- **Dashboard Admin** — Moderasi user, post, komentar, kategori, dan tag
+- **Full-Text Search** — Pencarian cepat dengan MongoDB text index
+- **Soft Delete** — Hapus aman tanpa kehilangan data
 
 ---
 
-## Teknologi yang Digunakan
-
-Aplikasi ini menggunakan arsitektur *Client-Server* terpisah (Single Page Application):
+## Teknologi
 
 ### Frontend
-- **React.js** (Vite)
-- **React Router DOM** (Client-side routing)
-- **Vanilla CSS** (Custom Design System tanpa framework)
-- **Axios** (HTTP Client)
+
+- React 19 + Vite
+- React Router v7
+- Tailwind CSS v4
+- Axios
 
 ### Backend
-- **Node.js** & **Express.js** (REST API)
-- **MongoDB** & **Mongoose** (Database & ODM)
-- **JWT (JSON Web Token)** (Autentikasi User)
-- **Bcrypt.js** (Keamanan Password)
+
+- Node.js + Express.js
+- MongoDB + Mongoose
+- JWT (autentikasi)
+- Bcryptjs (enkripsi password)
+
+### Database
+
+- MongoDB (NoSQL)
+- Text Index untuk pencarian
+- Soft delete pattern
 
 ---
 
-## Cara Instalasi & Menjalankan (Local Development)
+## Cara Menjalankan
 
 ### Prasyarat
-Pastikan di komputer Anda sudah terpasang:
-- [Node.js](https://nodejs.org/) (Versi 18+ disarankan)
-- [MongoDB Community Server](https://www.mongodb.com/try/download/community) (Berjalan di `localhost:27017` secara default)
 
-### Langkah-langkah
+- Node.js 18+
+- MongoDB (local atau Atlas)
 
-1. **Clone repositori ini**
-   ```bash
-   git clone https://github.com/username/telu-qna.git
-   cd telu-qna
-   ```
+### Instalasi
 
-2. **Instalasi Dependencies**
-   Jalankan perintah ini di *root directory* untuk menginstal seluruh package frontend dan backend (karena `package.json` menyatukan dependensi server dan client):
-   ```bash
-   npm install
-   ```
+```bash
+# Clone & masuk folder
+cd telu-qna
 
-3. **Konfigurasi Environment**
-   Buat file bernama `.env` di *root directory*, lalu isi dengan:
-   ```env
-   PORT=5000
-   MONGO_URI=mongodb://127.0.0.1:27017/teluqna
-   JWT_SECRET=rahasia_super_aman_untuk_telu_qna_123
-   ```
+# Install dependencies
+npm install
 
-4. **Isi Database dengan Data Awal (Seeding)**
-   Jalankan perintah ini untuk membersihkan database (jika ada) dan mengisi data *dummy* awal (users, posts, categories, comments):
-   ```bash
-   npm run seed
-   ```
-   *(Data akun uji coba akan tercetak di terminal setelah proses selesai, contoh: andi@mahasiswa.ac.id / password123)*
+# Setup environment
+cp .env.example .env
+# Edit .env dengan MongoDB URI dan JWT_SECRET
 
-5. **Jalankan Aplikasi**
-   Gunakan perintah `dev` untuk menyalakan Backend (Port 5000) dan Frontend (Port 5173) secara bersamaan:
-   ```bash
-   npm run dev
-   ```
+# Seed database
+npm run seed
 
-6. Buka browser dan akses: **http://localhost:5173**
+# Jalankan aplikasi
+npm run dev
+```
+
+### Akun Demo
+
+| Username | Email                                | Password    | Role  |
+| -------- | ------------------------------------ | ----------- | ----- |
+| admin    | admin@student.telkomuniversity.ac.id | admin123    | Admin |
+| andi     | andi@student.telkomuniversity.ac.id  | password123 | User  |
 
 ---
 
-## Struktur Folder Utama
+## Struktur Folder
 
-```text
+```
 telu-qna/
-├── server/             # Kode Backend (Express API)
-│   ├── index.js        # Entry point server
-│   ├── middleware/     # Auth JWT verifier
-│   ├── models/         # Skema Mongoose (Post, User, Comment, dll)
-│   └── routes/         # Endpoint API (/api/posts, /api/auth, dll)
-├── src/                # Kode Frontend (React App)
-│   ├── App.jsx         # Konfigurasi Routes Frontend
-│   ├── components/     # Reusable UI (Navbar, PostCard, Sidebar)
-│   ├── pages/          # Halaman utama (ForumPage, DetailPage, Login)
-│   ├── services/       # Integrasi Axios API
-│   ├── utils/          # Fungsi formatter/helper
-│   └── index.css       # Global styles & variabel warna
-└── package.json        # Script project & dependensi
+├── server/
+│   ├── index.js          # Entry point (port 5000)
+│   ├── seed.js           # Database seeder
+│   ├── create-admin.js   # Script buat admin via CLI
+│   ├── middleware/       # auth.js, admin.js
+│   ├── models/          # User, Post, Comment, Notification, Category, Tag
+│   └── routes/          # auth, posts, comments, notifications, admin
+├── src/
+│   ├── App.jsx          # Router setup
+│   ├── components/      # Navbar, PostCard, CommentCard, Sidebar
+│   ├── pages/           # ForumPage, DetailPage, AskPage, NotifPage
+│   │   └── admin/       # AdminDashboard, UserManagement, dll
+│   ├── services/        # api.js (Axios instance)
+│   └── utils/           # formatDate, swal
+└── package.json
 ```
 
 ---
 
-## Catatan Tambahan
-Proyek ini dibuat untuk tujuan edukasi dan demonstrasi penerapan *Relational Data Model* vs *Embedded Document* serta *Aggregation Pipeline* pada ekosistem MongoDB. Selengkapnya mengenai rancangan sistem dapat dilihat pada dokumen internal aplikasi.
+## API Endpoints
 
-***
+### Auth
+
+- `POST /api/auth/register` — Registrasi
+- `POST /api/auth/login` — Login
+- `GET /api/auth/me` — Get current user
+
+### Posts
+
+- `GET /api/posts` — List pertanyaan
+- `GET /api/posts/trending` — Post trending
+- `POST /api/posts` — Buat pertanyaan
+- `PUT /api/posts/:id/upvote` — Toggle upvote
+- `PUT /api/posts/:id/solve` — Pilih jawaban terbaik
+
+### Comments
+
+- `GET /api/posts/:id/comments` — List komentar
+- `POST /api/posts/:id/comments` — Buat komentar/balasan
+- `PUT /api/comments/:id/upvote` — Toggle upvote komentar
+
+### Admin
+
+- `GET /api/admin/dashboard` — Statistik
+- `PUT /api/admin/users/:id/ban` — Ban user
+- `DELETE /api/admin/posts/:id` — Hapus post
+- `POST /api/admin/categories` — Tambah kategori
+
+---
+
+## Screenshots
+
+### Forum Page
+
+- Layout 2 kolom: feed + trending
+- Filter kategori, status, search
+- Card-based modern UI
+
+### Admin Dashboard
+
+- Statistik forum
+- Manajemen user, post, komentar, kategori, tag
+
+---
