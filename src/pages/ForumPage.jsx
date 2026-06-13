@@ -271,12 +271,35 @@ export default function ForumPage() {
                 <p style={{ fontSize: 13, color: 'var(--color-text-muted)', textAlign: 'center', padding: '16px 0' }}>Belum ada trending</p>
               ) : (
                 trending.map((t, i) => (
-                  <Link key={t._id} to={`/forum/${t._id}`} style={{ display: 'flex', gap: 12, textDecoration: 'none', color: 'inherit', alignItems: 'flex-start' }}>
-                    <span style={{ fontSize: 16, fontWeight: 700, color: 'rgba(156,163,175,0.25)', width: 20, textAlign: 'right', flexShrink: 0, lineHeight: 1.4 }}>{i + 1}</span>
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', lineHeight: 1.4, marginBottom: 4 }}>{t.title}</p>
-                      <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{t.upvoteCount} votes</span>
-                    </div>
+                  <Link
+                    key={t._id}
+                    to={`/forum/${t._id}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      padding: '10px 12px',
+                      borderRadius: 10,
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      background: 'rgba(59,130,246,0.05)',
+                      border: '1px solid rgba(59,130,246,0.1)',
+                      transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = 'rgba(59,130,246,0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(59,130,246,0.3)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'rgba(59,130,246,0.05)';
+                      e.currentTarget.style.borderColor = 'rgba(59,130,246,0.1)';
+                    }}
+                  >
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-primary)', width: 18 }}>{i + 1}</span>
+                    <p style={{ flex: 1, fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)', lineHeight: 1.4 }}>{t.title}</p>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-primary)', background: 'rgba(59,130,246,0.15)', padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>
+                      {t.upvoteCount} votes
+                    </span>
                   </Link>
                 ))
               )}
